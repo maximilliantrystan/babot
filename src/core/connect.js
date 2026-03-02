@@ -155,17 +155,14 @@ export default async function connectToWhatsApp({
       const reason = new Boom(lastDisconnect?.error)?.output.statusCode;
       eventBus.emit("disconnected", reason);
 
-      // Auto reconnect dengan delay, skip untuk error tertentu
-      if (reason !== 440 && reason !== 401) {
-        console.log(chalk.yellow(`⏳ Reconnecting dalam 3 detik... (Kode: ${reason})`));
-        await delay(3000);
-        return connectToWhatsApp({
-          folder,
-          phoneNumber,
-          type_connection,
-          autoread,
-        });
-      }
+      // Auto reconnect dengan delay
+      await delay(3000);
+      return connectToWhatsApp({
+        folder,
+        phoneNumber,
+        type_connection,
+        autoread,
+      });
     }
   });
 

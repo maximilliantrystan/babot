@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { connectToWhatsApp, sessions, serializeMessage } from "./base.js";
 import CommandHandler from "./src/commands/handler.js";
 import modData from "./src/libs/moderationData.js";
@@ -19,7 +18,7 @@ try {
   // Initialize Command Handler
   const commandHandler = new CommandHandler({
     prefix: ".",
-    ownerPhone: "628139234837@s.whatsapp.net",
+    ownerPhone: process.env.OWNER_PHONE || "628xxxxxxxxx@s.whatsapp.net",
   });
 
   // Load commands
@@ -57,7 +56,7 @@ try {
               delete: msg.m.key,
             });
           } catch (e) {
-            console.error("Could not delete automod message");
+            console.error("Could not delete automod message:", e.message);
           }
 
           // Add warn
@@ -101,7 +100,7 @@ try {
               delete: msg.m.key,
             });
           } catch (e) {
-            console.error("Could not delete antilink message");
+            console.error("Could not delete antilink message:", e.message);
           }
 
           if (exceeded) {
@@ -124,7 +123,7 @@ try {
         console.log(`✅ Command executed: ${content}`);
       }
     } catch (error) {
-      console.error("Error in message handler:", error.message);
+      console.error("Error in message handler:", error);
     }
   });
 

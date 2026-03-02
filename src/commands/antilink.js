@@ -54,13 +54,9 @@ const antilinkCommand = {
       case "info":
         return await this.showStatus(sock, remoteJid, remoteJid);
 
-      case "help":
-      case "h":
-        return await this.showHelp(sock, remoteJid);
-
       default:
         await sock.sendMessage(remoteJid, {
-          text: `❌ Subcommand "${subcommand}" tidak diketahui\n\nGunakan: .antilink help untuk melihat semua perintah`,
+          text: `❌ Subcommand "${subcommand}" tidak diketahui\n\nGunakan: .antilink [on|off|limit|status]`,
         });
     }
   },
@@ -104,38 +100,6 @@ const antilinkCommand = {
 
     text += `_Deteksi link: chat.whatsapp.com_\n`;
     text += `_Counter reset setiap hari_`;
-
-    await sock.sendMessage(remoteJid, { text });
-  },
-
-  async showHelp(sock, remoteJid) {
-    let text = `╔════════════════════════╗\n`;
-    text += `║  📖 ANTILINK HELP      ║\n`;
-    text += `╚════════════════════════╝\n\n`;
-
-    text += `*📋 Syntax:* .antilink [subcommand] [args]\n\n`;
-
-    text += `*🔧 Subcommands:*\n\n`;
-
-    text += `1️⃣ *on* - Aktifkan antilink\n`;
-    text += `   Format: .antilink on\n\n`;
-
-    text += `2️⃣ *off* - Nonaktifkan antilink\n`;
-    text += `   Format: .antilink off\n\n`;
-
-    text += `3️⃣ *limit* - Set limit link per hari\n`;
-    text += `   Format: .antilink limit <angka>\n`;
-    text += `   Contoh: .antilink limit 2\n\n`;
-
-    text += `4️⃣ *status* - Lihat status antilink\n`;
-    text += `   Format: .antilink status\n\n`;
-
-    text += `*⚙️ Fitur:*\n`;
-    text += `• Deteksi link: chat.whatsapp.com, wa.me, whatsapp.com\n`;
-    text += `• Auto delete link yang dikirim\n`;
-    text += `• Limit per user per hari\n`;
-    text += `• Counter reset setiap ganti hari\n`;
-    text += `• Per grup setting\n`;
 
     await sock.sendMessage(remoteJid, { text });
   },

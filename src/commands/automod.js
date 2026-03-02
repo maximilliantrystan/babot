@@ -69,13 +69,9 @@ const automodCommand = {
       case "info":
         return await this.showStatus(sock, remoteJid, remoteJid);
 
-      case "help":
-      case "h":
-        return await this.showHelp(sock, remoteJid);
-
       default:
         await sock.sendMessage(remoteJid, {
-          text: `❌ Subcommand "${subcommand}" tidak diketahui\n\nGunakan: .automod help untuk melihat semua perintah`,
+          text: `❌ Subcommand "${subcommand}" tidak diketahui\n\nGunakan: .automod [add|remove|on|off|warn|list|status]`,
         });
     }
   },
@@ -200,46 +196,6 @@ const automodCommand = {
     }
 
     text += `\n_Gunakan: .automod list untuk melihat semua kata_`;
-
-    await sock.sendMessage(remoteJid, { text });
-  },
-
-  async showHelp(sock, remoteJid) {
-    let text = `╔════════════════════════╗\n`;
-    text += `║  📖 AUTOMOD HELP       ║\n`;
-    text += `╚════════════════════════╝\n\n`;
-
-    text += `*📋 Syntax:* .automod [subcommand] [args]\n\n`;
-
-    text += `*🔧 Subcommands:*\n\n`;
-
-    text += `1️⃣ *add* - Tambah kata terlarang\n`;
-    text += `   Format: .automod add kata\n`;
-    text += `   Contoh: .automod add badword\n\n`;
-
-    text += `2️⃣ *remove* - Hapus kata terlarang\n`;
-    text += `   Format: .automod remove kata\n`;
-    text += `   Contoh: .automod remove badword\n\n`;
-
-    text += `3️⃣ *warn* - Set maksimal warn\n`;
-    text += `   Format: .automod warn <angka>\n`;
-    text += `   Contoh: .automod warn 3\n\n`;
-
-    text += `4️⃣ *on/off* - Aktifkan/nonaktifkan automod\n`;
-    text += `   Format: .automod on\n`;
-    text += `   Format: .automod off\n\n`;
-
-    text += `5️⃣ *list* - Lihat semua kata terlarang\n`;
-    text += `   Format: .automod list\n\n`;
-
-    text += `6️⃣ *status* - Lihat status automod\n`;
-    text += `   Format: .automod status\n\n`;
-
-    text += `*⚙️ Fitur:*\n`;
-    text += `• Auto delete pesan dengan kata terlarang\n`;
-    text += `• Auto warn user (per user per grup)\n`;
-    text += `• Auto kick jika exceed max warn\n`;
-    text += `• Semua setting per grup (berbeda-beda)\n`;
 
     await sock.sendMessage(remoteJid, { text });
   },

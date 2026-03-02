@@ -8,12 +8,72 @@
       "userWarns": {}
     },
     "antilink": {
+      "enabled": true,
+      "maxPerDay": 1,
+      "dailyLinks": {
+        "2026-03-02": {
+          "154537922936926@lid": 1
+        }
+      }
+    }
+  },
+  "154537922936926@lid": {
+    "admins": [],
+    "automod": {
+      "enabled": false,
+      "maxWarn": 3,
+      "bannedWords": [],
+      "userWarns": {}
+    },
+    "antilink": {
       "enabled": false,
       "maxPerDay": 1,
       "dailyLinks": {}
     }
   },
-  "154537922936926@lid": {
+  "120363406565037388@g.us": {
+    "admins": [],
+    "automod": {
+      "enabled": false,
+      "maxWarn": 3,
+      "bannedWords": [],
+      "userWarns": {}
+    },
+    "antilink": {
+      "enabled": false,
+      "maxPerDay": 1,
+      "dailyLinks": {}
+    }
+  },
+  "120363143793460878@g.us": {
+    "admins": [],
+    "automod": {
+      "enabled": false,
+      "maxWarn": 3,
+      "bannedWords": [],
+      "userWarns": {}
+    },
+    "antilink": {
+      "enabled": false,
+      "maxPerDay": 1,
+      "dailyLinks": {}
+    }
+  },
+  "120363424938929121@g.us": {
+    "admins": [],
+    "automod": {
+      "enabled": false,
+      "maxWarn": 3,
+      "bannedWords": [],
+      "userWarns": {}
+    },
+    "antilink": {
+      "enabled": false,
+      "maxPerDay": 1,
+      "dailyLinks": {}
+    }
+  },
+  "120363147861140609@g.us": {
     "admins": [],
     "automod": {
       "enabled": false,

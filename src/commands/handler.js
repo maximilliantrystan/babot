@@ -11,7 +11,6 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import chalk from "chalk";
-import modData from "../libs/moderationData.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -126,11 +125,8 @@ class CommandHandler {
 
       // Validasi izin
       if (command.adminOnly && sender !== this.ownerPhone) {
-        // Simplified admin check - just check custom admin list
-        const phoneNumber = sender.split("@")[0];
-        const isCustomAdmin = modData.isCustomAdmin(remoteJid, phoneNumber);
-        
-        if (!isCustomAdmin) {
+        const isAdmin = await this.isAdmin(sock, remoteJid, sender, isGroup);
+        if (!isAdmin) {
           await sock.sendMessage(remoteJid, {
             text: "❌ Perintah ini hanya untuk admin",
           });
@@ -156,6 +152,22 @@ class CommandHandler {
       return true;
     } catch (error) {
       console.error(chalk.redBright("Error executing command:"), error);
+      return false;
+    }
+  }
+
+  /**
+   * Check if user is admin
+   */
+  async isAdmin(sock, groupId, userId, isGroup) {
+    if (!isGroup) return false; // Private message, bukan admin grup
+
+    try {
+      const metadata = await sock.groupMetadata(groupId);
+      return metadata.participants.some(
+        (p) => p.id === userId && p.admin !== null
+      );
+    } catch {
       return false;
     }
   }
