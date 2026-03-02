@@ -1,10 +1,13 @@
+import 'dotenv/config';
 import { connectToWhatsApp, sessions, serializeMessage } from "./base.js";
+import CommandHandler from "./src/commands/handler.js";
+import modData from "./src/libs/moderationData.js";
 
 try {
   const { sock, events } = await connectToWhatsApp({
     folder: "session",
-    type_connection: "pairing", // atau "qr"
-    phoneNumber: "628xxx",
+    type_connection: "pairing",
+    phoneNumber: process.env.PHONE_NUMBER || "628xxxxxxxxx",
     autoread: true,
   });
 
@@ -13,49 +16,115 @@ try {
 
   console.log("🚀 Bot sedang menghubungkan ke WhatsApp...");
 
+  // Initialize Command Handler
+  const commandHandler = new CommandHandler({
+    prefix: ".",
+    ownerPhone: "628139234837@s.whatsapp.net",
+  });
+
+  // Load commands
+  await commandHandler.loadCommands("./src/commands");
+
+  // Set handler reference untuk help command
+  const helpCmd = commandHandler.getCommand("help");
+  if (helpCmd) helpCmd._handler = commandHandler;
+
   // 📡 Event: ketika koneksi berhasil
   events.on("connected", () => console.log("✅ Bot berhasil terhubung!"));
 
-  // 💬 Event: pesan masuk
+  // 💬 Event: pesan masuk dengan command system dan moderation
   events.on("message", async (msg) => {
-    const {
-      id,
-      remoteJid,
-      sender,
-      content,
-      type,
-      isQuoted,
-      quotedMessage,
-      message,
-      m,
-    } = msg;
-    //const { sock } = m;
+    try {
+      const { remoteJid, sender, content, isGroup } = msg;
 
-    console.log(`💬 Pesan dari ${sender}:`, content);
-    if (content == "ping") {
-      await sock.sendMessage(remoteJid, {
-        text: "Pong 👋 ini pesan otomatis dari bot!",
-      });
-      return;
-    }
+      // 🛡️ AUTOMOD CHECK
+      if (isGroup && modData.isAutomodEnabled(remoteJid)) {
+        const bannedWords = modData.getBannedWords(remoteJid);
+        const contentLower = content.toLowerCase();
+        let hasViolation = false;
 
-    // Jika pesan berisi media (contoh: gambar)
-    if (type === "image") {
-      const mediaPath = await sock.downloadMedia(message);
-      if (mediaPath) console.log("📥 Gambar tersimpan di:", mediaPath);
+        for (const word of bannedWords) {
+          if (contentLower.includes(word)) {
+            hasViolation = true;
+            break;
+          }
+        }
 
-      // Kirim balasan dengan file
+        if (hasViolation) {
+          // Delete message
+          try {
+            await sock.sendMessage(msg.m.remoteJid, {
+              delete: msg.m.key,
+            });
+          } catch (e) {
+            console.error("Could not delete automod message");
+          }
 
-      await sock.sendMessage(remoteJid, {
-        image: { url: mediaPath },
-        caption: "Ini contoh gambar dari bot 🖼️",
-      });
-    }
+          // Add warn
+          const warnCount = modData.addWarn(remoteJid, sender);
+          const maxWarn = modData.getMaxWarn(remoteJid);
 
-    // Jika pesan membalas media lain
-    if (isQuoted && quotedMessage) {
-      const quotedPath = await sock.downloadQuotedMedia(message);
-      if (quotedPath) console.log("📥 Media quoted tersimpan di:", quotedPath);
+          if (warnCount >= maxWarn) {
+            // Kick user
+            try {
+              await sock.groupParticipantsUpdate(remoteJid, [sender], "remove");
+              await sock.sendMessage(remoteJid, {
+                text: `🔨 @${sender.split("@")[0]} telah di-kick karena mencapai ${maxWarn} warn`,
+              });
+            } catch (e) {
+              await sock.sendMessage(remoteJid, {
+                text: `⚠️  Gagal kick user (pesan terlarang)`,
+              });
+            }
+            modData.resetWarn(remoteJid, sender);
+          } else {
+            await sock.sendMessage(remoteJid, {
+              text: `⚠️  @${sender.split("@")[0]} dilarang menggunakan kata terlarang!\n⚠️  *Warn: ${warnCount}/${maxWarn}*`,
+            });
+          }
+          return;
+        }
+      }
+
+      // 🔗 ANTILINK CHECK
+      if (isGroup && modData.isAntilinkEnabled(remoteJid)) {
+        const linkPattern = /chat\.whatsapp\.com|wa\.me|whatsapp\.com/i;
+        if (linkPattern.test(content)) {
+          // Check daily limit
+          const { count, limit, exceeded } = modData.checkAntilinkDaily(
+            remoteJid,
+            sender
+          );
+
+          try {
+            await sock.sendMessage(msg.m.remoteJid, {
+              delete: msg.m.key,
+            });
+          } catch (e) {
+            console.error("Could not delete antilink message");
+          }
+
+          if (exceeded) {
+            await sock.sendMessage(remoteJid, {
+              text: `🔗 @${sender.split("@")[0]} telah melampaui limit ${limit} link per hari\n❌ Pesan dihapus`,
+            });
+          } else {
+            await sock.sendMessage(remoteJid, {
+              text: `⚠️  Hati-hati! @${sender.split("@")[0]} sudah mengirim ${count}/${limit} link hari ini`,
+            });
+          }
+          return;
+        }
+      }
+
+      // Try execute command
+      const executed = await commandHandler.execute(msg, sock);
+
+      if (executed) {
+        console.log(`✅ Command executed: ${content}`);
+      }
+    } catch (error) {
+      console.error("Error in message handler:", error.message);
     }
   });
 
@@ -73,6 +142,8 @@ try {
   events.on("disconnected", (reason) =>
     console.log("❌ Koneksi terputus:", reason)
   );
+
+  console.log("🚀 Bot is running with command system");
 } catch (err) {
   console.error("❗ Gagal menghubungkan bot:", err.message);
 }

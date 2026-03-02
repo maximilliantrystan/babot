@@ -1,0 +1,30 @@
+{
+  "120363405852291142@g.us": {
+    "admins": [],
+    "automod": {
+      "enabled": false,
+      "maxWarn": 3,
+      "bannedWords": [],
+      "userWarns": {}
+    },
+    "antilink": {
+      "enabled": false,
+      "maxPerDay": 1,
+      "dailyLinks": {}
+    }
+  },
+  "154537922936926@lid": {
+    "admins": [],
+    "automod": {
+      "enabled": false,
+      "maxWarn": 3,
+      "bannedWords": [],
+      "userWarns": {}
+    },
+    "antilink": {
+      "enabled": false,
+      "maxPerDay": 1,
+      "dailyLinks": {}
+    }
+  }
+}

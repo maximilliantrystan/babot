@@ -1,3 +1,14 @@
+/**
+ * WhatsApp Connection Module
+ * 
+ * Fungsi utama untuk menghubungkan ke WhatsApp melalui Baileys.
+ * Menangani:
+ * - Inisialisasi koneksi WhatsApp
+ * - Manajemen QR Code dan Pairing
+ * - Event handling (pesan, grup, koneksi)
+ * - Auto-reconnect
+ */
+
 import fs from "fs";
 import path from "path";
 import chalk from "chalk";
@@ -11,8 +22,8 @@ import makeWASocket, {
   fetchLatestBaileysVersion,
 } from "baileys";
 
-import { sessions } from "./libs/cache.js";
-import serializeMessage from "./libs/serializeMessage.js";
+import { sessions } from "../services/cache.js";
+import serializeMessage from "../services/message.js";
 import {
   setupSessionDirectory,
   success,
@@ -21,7 +32,7 @@ import {
   downloadQuotedMedia,
   downloadMedia,
   clearDirectory,
-} from "./libs/utils.js";
+} from "../utils/index.js";
 
 // Inisialisasi logger dan event bus global
 const logger = pino({ level: "silent" });
@@ -142,9 +153,19 @@ export default async function connectToWhatsApp({
       eventBus.emit("connected", sock);
     } else if (connection === "close") {
       const reason = new Boom(lastDisconnect?.error)?.output.statusCode;
-      console.log(`❌ Koneksi terputus: ${reason}`);
       eventBus.emit("disconnected", reason);
-      // JANGAN auto-reconnect - biarkan user restart manual
+
+      // Auto reconnect dengan delay, skip untuk error tertentu
+      if (reason !== 440 && reason !== 401) {
+        console.log(chalk.yellow(`⏳ Reconnecting dalam 3 detik... (Kode: ${reason})`));
+        await delay(3000);
+        return connectToWhatsApp({
+          folder,
+          phoneNumber,
+          type_connection,
+          autoread,
+        });
+      }
     }
   });
 
